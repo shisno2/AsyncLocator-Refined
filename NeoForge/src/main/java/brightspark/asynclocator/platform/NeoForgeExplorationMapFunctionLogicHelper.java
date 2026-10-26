@@ -15,25 +15,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.saveddata.maps.MapDecorationType;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import org.jetbrains.annotations.Nullable;
 
 public class NeoForgeExplorationMapFunctionLogicHelper implements ExplorationMapFunctionLogicHelper {
 
     @Override
     public void invalidateMap(ItemStack mapStack, ServerLevel level, BlockPos invPos) {
-        boolean updated = handleUpdateMapInChest(mapStack, level, invPos, (handler, slot) -> {
-            ALConstants.logDebug("Invalidating map in Forge inventory slot {}", slot);
-            if (handler instanceof IItemHandlerModifiable modifiableHandler) {
-                modifiableHandler.setStackInSlot(slot, new ItemStack(Items.MAP));
-            } else {
-                ItemStack extracted = handler.extractItem(slot, mapStack.getCount(), false);
-                if (!extracted.isEmpty()) {
-                    dropIfNotEmpty(level, invPos, handler.insertItem(slot, new ItemStack(Items.MAP), false));
-                }
-            }
+        boolean updated = handleUpdateMapInChest(mapStack, level, invPos, (container, slot) -> {
+            ALConstants.logDebug("Invalidating map in inventory slot {}", slot);
+            container.setItem(slot, new ItemStack(Items.MAP));
         });
         if (!updated) {
             ALConstants.logDebug(
@@ -51,19 +41,14 @@ public class NeoForgeExplorationMapFunctionLogicHelper implements ExplorationMap
             Holder<MapDecorationType> destinationTypeHolder,
             BlockPos invPos,
             @Nullable Component displayName) {
-        boolean updated = handleUpdateMapInChest(mapStack, level, invPos, (handler, slot) -> {
-            ItemStack actualStack = handler.getStackInSlot(slot);
+        boolean updated = handleUpdateMapInChest(mapStack, level, invPos, (container, slot) -> {
+            ItemStack actualStack = container.getItem(slot);
 
             CommonLogic.finalizeMap(actualStack, level, pos, scale, destinationTypeHolder, displayName);
             // finalize the actual stack
-            ALConstants.logDebug("Updated map in NeoForge inventory slot {}, broadcasting changes.", slot);
+            ALConstants.logDebug("Updated map in inventory slot {}, broadcasting changes.", slot);
 
-            if (handler instanceof IItemHandlerModifiable modifiableHandler) {
-                modifiableHandler.setStackInSlot(slot, actualStack);
-            } else {
-                handler.extractItem(slot, actualStack.getCount(), false);
-                dropIfNotEmpty(level, invPos, handler.insertItem(slot, actualStack, false));
-            }
+            container.setItem(slot, actualStack);
         });
         if (!updated) {
             ALConstants.logDebug(
@@ -79,52 +64,52 @@ public class NeoForgeExplorationMapFunctionLogicHelper implements ExplorationMap
         }
     }
 
+    // The ResourceHandler capability replaced IItemHandler in NeoForge 26.x and
+    // its transfer API is write-hostile; vanilla Container covers chests and
+    // every other vanilla inventory block entity, so route through that.
     private static boolean handleUpdateMapInChest(
             ItemStack mapStackToFind,
             ServerLevel level,
             BlockPos inventoryPos,
-            BiConsumer<IItemHandler, Integer> handleSlotFound) {
+            BiConsumer<Container, Integer> handleSlotFound) {
         BlockEntity be = level.getBlockEntity(inventoryPos);
-        if (be != null) {
-            IItemHandler itemHandler = level.getCapability(Capabilities.ItemHandler.BLOCK, inventoryPos, null);
-            if (itemHandler != null) {
-                boolean found = false;
-                UUID targetId = CommonLogic.getTrackingUUID(mapStackToFind);
-
-                if (targetId != null) {
-                    for (int i = 0; i < itemHandler.getSlots(); i++) {
-                        ItemStack slotStack = itemHandler.getStackInSlot(i);
-                        UUID slotId = CommonLogic.getTrackingUUID(slotStack);
-                        if (targetId.equals(slotId)) {
-                            handleSlotFound.accept(itemHandler, i);
-                            broadcastBlockContainerChanges(level, be);
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found) {
-                    ALConstants.logWarn(
-                            "Could not find map with UUID {} in {} at {}",
-                            targetId,
-                            be.getClass().getSimpleName(),
-                            inventoryPos);
-                }
-                return found;
-            } else {
-                ALConstants.logWarn(
-                        "Couldn't find item handler capability on block entity {} at {}",
-                        be.getClass().getSimpleName(),
-                        inventoryPos);
-                return false;
-            }
-        } else {
+        if (be == null) {
             ALConstants.logWarn(
                     "Couldn't find block entity at inventory position {} in level {}",
                     inventoryPos,
-                    level.dimension().location());
+                    level.dimension().identifier());
             return false;
         }
+        if (!(be instanceof Container container)) {
+            ALConstants.logWarn(
+                    "Block entity {} at {} does not expose a Container",
+                    be.getClass().getSimpleName(),
+                    inventoryPos);
+            return false;
+        }
+        boolean found = false;
+        UUID targetId = CommonLogic.getTrackingUUID(mapStackToFind);
+
+        if (targetId != null) {
+            for (int i = 0; i < container.getContainerSize(); i++) {
+                ItemStack slotStack = container.getItem(i);
+                UUID slotId = CommonLogic.getTrackingUUID(slotStack);
+                if (targetId.equals(slotId)) {
+                    handleSlotFound.accept(container, i);
+                    broadcastBlockContainerChanges(level, be);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {
+            ALConstants.logWarn(
+                    "Could not find map with UUID {} in {} at {}",
+                    targetId,
+                    be.getClass().getSimpleName(),
+                    inventoryPos);
+        }
+        return found;
     }
 
     private static void broadcastBlockContainerChanges(ServerLevel level, BlockEntity be) {

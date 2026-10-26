@@ -29,7 +29,9 @@ public final class AsyncLocatorCommands {
 
     private static LiteralArgumentBuilder<CommandSourceStack> command(String name, ConfigReloader configReloader) {
         return Commands.literal(name)
-                .requires(source -> source.hasPermission(3))
+                .requires(source -> source.permissions()
+                                instanceof net.minecraft.server.permissions.LevelBasedPermissionSet lbps
+                        && lbps.level().isEqualOrHigherThan(net.minecraft.server.permissions.PermissionLevel.ADMINS))
                 .then(Commands.literal("status").executes(context -> showStatus(context.getSource())))
                 .then(Commands.literal("reload").executes(context -> reload(context.getSource(), configReloader)));
     }

@@ -5,7 +5,6 @@ import brightspark.asynclocator.AsyncLocator;
 import brightspark.asynclocator.mixins.LocateCommandAccess;
 import brightspark.asynclocator.platform.Services;
 import com.google.common.base.Stopwatch;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceOrTagArgument;
 import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
@@ -14,6 +13,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.commands.LocateCommand;
+import net.minecraft.util.Util;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.Structure;
 

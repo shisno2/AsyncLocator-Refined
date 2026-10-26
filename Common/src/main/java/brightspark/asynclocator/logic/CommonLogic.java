@@ -105,13 +105,14 @@ public class CommonLogic {
 
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
         if (customData == null) return false;
-        return customData.contains(PENDING_MARKER) || customData.contains(UUID_TRACKER);
+        return customData.copyTag().contains(PENDING_MARKER)
+                || customData.copyTag().contains(UUID_TRACKER);
     }
 
     // Retrieves the tracking UUID stoerd on a managed pending map
     public static @Nullable java.util.UUID getTrackingUUID(ItemStack stack) {
         CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
-        if (customData == null || !customData.contains(UUID_TRACKER)) return null;
+        if (customData == null || !customData.copyTag().contains(UUID_TRACKER)) return null;
         CompoundTag tag = customData.copyTag();
         String raw = tag.getString(UUID_TRACKER).orElse("");
         if (raw.isEmpty()) return null;

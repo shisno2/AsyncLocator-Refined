@@ -18,3 +18,7 @@ pluginManagement {
 
 rootProject.name = "AsyncLocator"
 include("Common", "Fabric", "NeoForge")
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}

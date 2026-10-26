@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(targets = "net.minecraft.world.entity.npc.VillagerTrades$TreasureMapForEmeralds")
+@Mixin(targets = "net.minecraft.world.entity.npc.villager.VillagerTrades$TreasureMapForEmeralds")
 public abstract class TreasureMapForEmeraldsMixin {
     @Shadow
     @Final

@@ -2,7 +2,7 @@ plugins {
     java
     idea
     `maven-publish`
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom")
 }
 
 val mod_name = providers.gradleProperty("mod_name").get()
@@ -19,9 +19,8 @@ val commonMain = project(":Common").extensions.getByType<SourceSetContainer>()["
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft_version")
-    mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:$fabric_loader_version")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
+    implementation("net.fabricmc:fabric-loader:$fabric_loader_version")
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabric_version")
 }
 
 loom {

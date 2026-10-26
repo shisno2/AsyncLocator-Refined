@@ -15,7 +15,7 @@ base {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(26))
     }
 }
 
@@ -104,7 +104,7 @@ tasks.named<ProcessResources>("processResources") {
 tasks.named<JavaCompile>("compileJava") {
     source(commonMain.allSource)
     options.encoding = "UTF-8"
-    options.release.set(21)
+    options.release.set(25)
 }
 
 publishing {

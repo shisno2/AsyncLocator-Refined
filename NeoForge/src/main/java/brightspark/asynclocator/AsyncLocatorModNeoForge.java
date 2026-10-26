@@ -1,6 +1,5 @@
 package brightspark.asynclocator;
 
-import brightspark.asynclocator.gametest.AsyncLocatorNeoForgeGameTests;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -37,9 +36,6 @@ public class AsyncLocatorModNeoForge {
                 AsyncLocatorModCommon.printConfigs();
             }
         });
-
-        modEventBus.addListener(AsyncLocatorNeoForgeGameTests::registerTestFunctions);
-        modEventBus.addListener(AsyncLocatorNeoForgeGameTests::registerTestInstances);
 
         IEventBus neoforgeEventBus = NeoForge.EVENT_BUS;
         neoforgeEventBus.addListener((RegisterCommandsEvent event) ->

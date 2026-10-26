@@ -3,9 +3,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 plugins {
-    id("fabric-loom") version "1.17-SNAPSHOT" apply false
-    id("net.neoforged.moddev") version "2.0.144" apply false
-    id("org.spongepowered.gradle.vanilla") version "0.2.2" apply false
+    id("net.fabricmc.fabric-loom") version "1.19.3" apply false
+    id("net.neoforged.moddev") version "2.0.148" apply false
+    id("org.spongepowered.gradle.vanilla") version "0.3.2" apply false
     id("com.diffplug.spotless") version "8.10.0" apply false
 }
 
@@ -18,7 +18,7 @@ subprojects {
     val minecraft_version = providers.gradleProperty("minecraft_version").get()
 
     configure<JavaPluginExtension> {
-        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+        toolchain.languageVersion.set(JavaLanguageVersion.of(26))
         withSourcesJar()
     }
 
@@ -60,7 +60,7 @@ subprojects {
 
     tasks.withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release.set(25)
         // Enable Xlint all except serial and processing
         options.compilerArgs.add("-Xlint:all,-serial,-processing")
     }
